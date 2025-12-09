@@ -57,9 +57,20 @@ public class DriverConnectionFactory
             throws SQLException
     {
         Properties properties = getCredentialProperties(session.getIdentity());
-        Connection connection = dataSource.getConnection(properties);
+        String tenant = getTenant(session);
+        Connection connection = dataSource.getTenantConnection(properties, tenant);
         checkState(connection != null, "Driver returned null connection, make sure the connection URL '%s' is valid for the driver %s", connectionUrl, driver);
         return connection;
+    }
+
+    private String getTenant(ConnectorSession session)
+            throws SQLException
+    {
+        String tenantCredentialKey = "tenant";
+        ConnectorIdentity identity = session.getIdentity();
+        String tenant = identity.getExtraCredentials().get(tenantCredentialKey);
+        checkState(tenant != null, "Tenant credential '%s' is required", tenantCredentialKey);
+        return tenant;
     }
 
     private Properties getCredentialProperties(ConnectorIdentity identity)

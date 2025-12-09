@@ -49,6 +49,15 @@ public class TracingDataSource
         return jdbcTelemetry.wrap(dataSource).getConnection();
     }
 
+    public Connection getTenantConnection(Properties properties, String tenant)
+            throws SQLException
+    {
+        properties.setProperty("tenant", tenant);
+        String tenantConnectionUrl = connectionUrl.replace("{tenant}", tenant);
+        DataSource dataSource = new JdbcDataSource(driver, tenantConnectionUrl, properties);
+        return jdbcTelemetry.wrap(dataSource).getConnection();
+    }
+
     private static class JdbcDataSource
             implements DataSource
     {
